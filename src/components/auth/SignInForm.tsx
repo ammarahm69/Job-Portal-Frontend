@@ -1,15 +1,16 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
-import {  EyeCloseIcon, EyeIcon } from "../../icons";
+import { Link } from "react-router";
+import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
 import { LOGIN_USER } from "../../api/apiFunctions/auth";
 import Alert from "../ui/alert/Alert";
+import { setLocalStorageItem } from "../../utils/helperFunction";
 
 export default function SignInForm() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +44,7 @@ export default function SignInForm() {
 
     try {
       const response = await LOGIN_USER(formData.email, formData.password);
-      
+      console.log('response', response)
       if (response.status === 200 && 'data' in response) {
         setAlert({
           show: true,
@@ -52,11 +53,18 @@ export default function SignInForm() {
           message: "Login successful!",
         });
         // Store the token in localStorage
-        localStorage.setItem("token", response.data.token);
+        setLocalStorageItem("user", response.data);
         // Redirect to dashboard after successful login
         setTimeout(() => {
-          navigate("/dashboard");
+          window.location.href = "/dashboard";
         }, 2000);
+      } else {
+        setAlert({
+          show: true,
+          variant: "error",
+          title: "Error",
+          message: `${response.data.msg}`,
+        })
       }
     } catch (error) {
       setAlert({
@@ -114,12 +122,12 @@ export default function SignInForm() {
                   <Label>
                     Email <span className="text-error-500">*</span>{" "}
                   </Label>
-                  <Input 
+                  <Input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="info@gmail.com" 
+                    placeholder="info@gmail.com"
                   />
                 </div>
                 <div>
@@ -161,8 +169,8 @@ export default function SignInForm() {
                   </Link>
                 </div>
                 <div>
-                  <Button 
-                    className="w-full" 
+                  <Button
+                    className="w-full"
                     size="sm"
                     disabled={isLoading}
                   >
